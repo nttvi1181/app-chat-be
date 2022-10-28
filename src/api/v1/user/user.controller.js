@@ -11,8 +11,10 @@ module.exports = {
       const { phone, email } = req.body
       const { error } = userValidate(req.body)
       if (error) {
+        console.log('LOG === REGISTER ==> ERROR', error)
         throw createError.BadRequest()
       }
+      console.log('LOG === REGISTER ==>', JSON.stringify(req.body))
       const isExist = await User.findOne({ phone }).exec()
       if (isExist) {
         throw createError.Conflict('phone is ready')

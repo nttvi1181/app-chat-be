@@ -25,6 +25,19 @@ module.exports = {
       }
     },
 
+    updateByConversationId: async (id, data) => {
+      try {
+        const newRecord = await Conversation.findOneAndUpdate(
+          { conversation_id: id },
+          { $set: { ...data } },
+          { new: true }
+        )
+        return newRecord
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+
     delete: async (id) => {
       try {
         await Conversation.deleteOne({ _id: id })

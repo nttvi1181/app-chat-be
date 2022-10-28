@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { User } = require('../user/user.model')
 const schema = mongoose.Schema
 
 const messageSchema = new schema(
@@ -10,10 +11,12 @@ const messageSchema = new schema(
       type: 'string',
     },
     sender_id: {
-      type: schema.ObjectId,
+      type: 'string',
+      ref: User.modelName,
     },
     recive_id: {
-      type: schema.ObjectId,
+      type: 'array',
+      ref: User.modelName,
     },
     content: {
       type: 'string',
@@ -36,10 +39,10 @@ const messageSchema = new schema(
       type: 'array',
       default: [],
     },
-    reactions:{
+    reactions: {
       type: 'array',
       default: [],
-    }
+    },
   },
   { timestamps: true }
 )

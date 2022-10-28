@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const { STATUS_USER, ROLE_USER } = require('../../../utils/constants.utils')
+const conn = require('../../../config/database.config')
 const schema = mongoose.Schema
 
 const UserSchema = new schema(
@@ -78,5 +79,5 @@ UserSchema.methods.isCheckPass = async function (password) {
 }
 
 module.exports = {
-  User: mongoose.model('Users', UserSchema),
+  User: conn.model('Users', UserSchema),
 }

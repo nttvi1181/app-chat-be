@@ -1,10 +1,10 @@
-const { Conversation } = require('./message.model')
+const { MessageModel } = require('./message.model')
 
 module.exports = {
-  ConversationService: {
+  MessageService: {
     create: async (data) => {
       try {
-        const newRecord = new Conversation(data)
+        const newRecord = new MessageModel(data)
         const result = await newRecord.save()
         return result
       } catch (error) {
@@ -14,7 +14,7 @@ module.exports = {
 
     update: async (id, data) => {
       try {
-        const newRecord = await Conversation.findOneAndUpdate(
+        const newRecord = await MessageModel.findOneAndUpdate(
           { _id: id },
           { $set: { ...data } },
           { new: true }
@@ -27,7 +27,7 @@ module.exports = {
 
     delete: async (id) => {
       try {
-        await Conversation.deleteOne({ _id: id })
+        await MessageModel.deleteOne({ _id: id })
         return true
       } catch (error) {
         throw new Error(error)
@@ -36,7 +36,7 @@ module.exports = {
 
     findOne: async (conditions) => {
       try {
-        const record = await Conversation.findOne(conditions).exec()
+        const record = await MessageModel.findOne(conditions).exec()
         return record
       } catch (error) {
         throw new Error(error)
@@ -45,7 +45,7 @@ module.exports = {
 
     getAll: async (conditions, skip = 0, limit = 9999999) => {
       try {
-        const records = await Conversation.find(conditions).skip(skip).limit(limit)
+        const records = await MessageModel.find(conditions).skip(skip).limit(limit)
         return records
       } catch (error) {
         throw new Error(error)
@@ -54,16 +54,7 @@ module.exports = {
 
     getById: async (id) => {
       try {
-        const record = await Conversation.findOne({ _id: id }).lean().exec()
-        return record
-      } catch (error) {
-        throw new Error(error)
-      }
-    },
-
-    getByConversationId: async (id) => {
-      try {
-        const record = await Conversation.findOne({ conversation_id: id }).lean().exec()
+        const record = await MessageModel.findOne({ _id: id }).lean().exec()
         return record
       } catch (error) {
         throw new Error(error)
