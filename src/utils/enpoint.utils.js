@@ -4,7 +4,7 @@ module.exports = {
   USER: '/user',
   REGISTER: '/register',
   LOGIN: '/login',
-  RESFRESH_TOKEN: '/resfresh_token',
+  RESFRESH_TOKEN: '/refresh_token',
   MYINFO: '/myinfo',
   GET_ALL: '/get_all',
 }

@@ -16,6 +16,7 @@ class SocketServices {
   }
 
   connection(socket) {
+    console.log('new user connect socket', socket.id)
     socket.on('disconnect', (msg) => {
       console.log('user disconnect', socket.id)
     })
@@ -25,6 +26,11 @@ class SocketServices {
       const { user_id } = msg
       if (!user_id) return
       socket.join(user_id)
+    })
+
+    socket.on('test', (message) => {
+      console.log(message)
+      _io.sockets.emit('test', message)
     })
 
     socket.on(CLIENT_SEND_NEW_MESSAGE, async (msg) => {
@@ -47,16 +53,24 @@ class SocketServices {
             conversation = await ConversationService.create(dataNewConversation)
           }
         }
-        await MessageService.create(msg)
-        await ConversationService.updateByConversationId(conversation_id, {
-          last_message: message_id,
-        })
-        sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), msg)
+        Promise.all([
+          MessageService.create(msg),
+          ConversationService.updateByConversationId(conversation_id, {
+            last_message: message_id,
+          }),
+        ])
           .then(() => {
-            console.log('LOG => SEND NEW MESSAGE SUCCESS', JSON.stringify(msg))
+            sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), msg)
+              .then(() => {
+                console.log('LOG => SEND NEW MESSAGE SUCCESS', JSON.stringify(msg))
+              })
+              .catch(() => {
+                console.log('LOG => SEND NEW MESSAGE FAIL', JSON.stringify(msg))
+              })
           })
           .catch(() => {
-            console.log('LOG => SEND NEW MESSAGE FAIL', JSON.stringify(msg))
+            console.log('LOG => SEND MESSAGE ERROR')
+            socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
           })
       } catch (error) {
         socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
@@ -65,10 +79,6 @@ class SocketServices {
 
     socket.on(LEAVE_APP, (msg) => {
       console.log(`User leave app`, msg)
-    })
-
-    socket.on(SEND_MESSAGE_LIVE_ROOM, (msg) => {
-      _io.to(msg.liveId).emit(SERVER_SEND_MESSAGE_LIVE_ROOM, msg)
     })
   }
 }

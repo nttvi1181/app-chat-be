@@ -6,7 +6,7 @@ module.exports = {
   signAccessToken: async function (userId) {
     try {
       const accessToken = await jwt.sign({ data: userId }, process.env.TOKEN_APP, {
-        expiresIn: '3600s',
+        expiresIn: '5s',
       })
       return accessToken
     } catch (error) {

@@ -3,7 +3,7 @@ const { User } = require('./user.model')
 const bcrypt = require('bcrypt')
 const { userValidate, userValidateLogin } = require('./user.validation')
 const { UserService } = require('./user.service')
-const { INVALID_LOGIN } = require('../../../constant/errorType.constant')
+const { INVALID_LOGIN, INVALID_REFRESH_TOKEN } = require('../../../constant/errorType.constant')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
 module.exports = {
   register: async function (req, res) {
@@ -102,6 +102,7 @@ module.exports = {
   myInfor: async function (req, res) {
     try {
       const { userId } = req
+      console.log(req)
       if (!userId) {
         throw createError.Unauthorized()
       }
