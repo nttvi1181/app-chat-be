@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const { User } = require('../user/user.model')
+const connect = require('../../../config/database.config')
 const schema = mongoose.Schema
 
 const messageSchema = new schema(
@@ -48,5 +49,5 @@ const messageSchema = new schema(
 )
 
 module.exports = {
-  MessageModel: mongoose.model('Message', messageSchema),
+  MessageModel: connect.model('Message', messageSchema),
 }

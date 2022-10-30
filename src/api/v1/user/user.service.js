@@ -45,7 +45,7 @@ module.exports = {
 
     getAll: async (conditions, skip = 0, limit = 9999999) => {
       try {
-        const listUsers = await User.find(conditions).skip(skip).limit(limit)
+        const listUsers = await User.find(conditions).skip(skip).limit(limit).select("-password")
         return listUsers
       } catch (error) {
         throw new Error(error)

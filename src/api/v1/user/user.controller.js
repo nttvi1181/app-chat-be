@@ -1,7 +1,7 @@
 const createError = require('http-errors')
 const { User } = require('./user.model')
 const bcrypt = require('bcrypt')
-const { userValidate, userValidateLogin } = require('./user.validation')
+const { userValidate, userValidateLogin, userValidateUpdate } = require('./user.validation')
 const { UserService } = require('./user.service')
 const { INVALID_LOGIN, INVALID_REFRESH_TOKEN } = require('../../../constant/errorType.constant')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
@@ -66,6 +66,7 @@ module.exports = {
       const data = { ...req.body }
       delete data.id
       const { error } = userValidateUpdate(req.body)
+      console.log(error)
       const { password } = data
       if (password) {
         const salt = await bcrypt.genSalt()

@@ -13,10 +13,22 @@ app.use(
     origin: '*',
   })
 )
-app.use(fileUpload({
-  useTempFiles: true
-}))
-app.use(express.static(__dirname + '/public'))
+app.use(
+  fileUpload({
+    useTempFiles: true,
+  })
+)
+
+app.use(
+  express.static(__dirname + '/public', {
+    etag: true, // Just being explicit about the default.
+    lastModified: true, // Just being explicit about the default.
+    setHeaders: (res, path) => {
+      res.setHeader('Cache-Control', 'max-age=31536000')
+    },
+  })
+)
+
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(express.json())

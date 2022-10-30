@@ -4,10 +4,12 @@ module.exports = {
   MessageService: {
     create: async (data) => {
       try {
+        console.log('data insert message', data)
         const newRecord = new MessageModel(data)
         const result = await newRecord.save()
         return result
       } catch (error) {
+        console.log('Error insert message')
         throw new Error(error)
       }
     },

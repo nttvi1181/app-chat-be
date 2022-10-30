@@ -10,11 +10,11 @@ const {
 const { ConversationService } = require('../../conversation/conversation.service')
 const { MessageService } = require('../../message/message.service')
 const { validateMessage } = require('../../message/message.validation')
-class SocketServices {
-  sendToMultiple(message, array, data) {
-    return Promise.all(array?.map((item) => async () => _io.socket.to(item).emit(message, data)))
-  }
 
+async function sendToMultiple(message, array, data) {
+  return Promise.all(array?.map((item) => _io.to(item).emit(message, data)))
+}
+class SocketServices {
   connection(socket) {
     console.log('new user connect socket', socket.id)
     socket.on('disconnect', (msg) => {
@@ -28,20 +28,14 @@ class SocketServices {
       socket.join(user_id)
     })
 
-    socket.on('test', (message) => {
-      console.log(message)
-      _io.sockets.emit('test', message)
-    })
-
     socket.on(CLIENT_SEND_NEW_MESSAGE, async (msg) => {
       try {
         const { error } = validateMessage(msg)
         if (error) {
-          socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
+          socket.emit(CLIENT_SEND_MESSAGE_ERROR, { ...msg, messageError: error })
           return
         }
-
-        const { is_check_conversation, recive_id, conversation_id, message_id } = msg
+        const { is_check_conversation, recive_id, sender_id, conversation_id, message_id } = msg
         let conversation = null
         if (is_check_conversation) {
           conversation = await ConversationService.getByConversationId(conversation_id)
@@ -53,8 +47,10 @@ class SocketServices {
             conversation = await ConversationService.create(dataNewConversation)
           }
         }
+        const dataInsertMessage = { ...msg }
+        delete dataInsertMessage.is_check_conversation
         Promise.all([
-          MessageService.create(msg),
+          MessageService.create(dataInsertMessage),
           ConversationService.updateByConversationId(conversation_id, {
             last_message: message_id,
           }),
@@ -64,15 +60,17 @@ class SocketServices {
               .then(() => {
                 console.log('LOG => SEND NEW MESSAGE SUCCESS', JSON.stringify(msg))
               })
-              .catch(() => {
+              .catch((e) => {
+                console.log('e', e)
                 console.log('LOG => SEND NEW MESSAGE FAIL', JSON.stringify(msg))
               })
           })
-          .catch(() => {
-            console.log('LOG => SEND MESSAGE ERROR')
+          .catch((e) => {
+            console.log('LOG => SEND MESSAGE ERROR', e)
             socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
           })
       } catch (error) {
+        console.log('error', error)
         socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
       }
     })

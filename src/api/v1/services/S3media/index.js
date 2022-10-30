@@ -17,11 +17,12 @@ module.exports = {
   MediaService: {
     upload: async (req, res, next) => {
       try {
-        const file = req?.files?.formAvatar
-        if (!file) throw new Error()
+        const file = req?.files?.fileUpload
+        const folder = req.body.folder
+        if (!file | !folder) throw new Error()
         await cloudinary.v2.uploader.upload(
           file.tempFilePath,
-          { folder: 'yummy/avatar' },
+          { folder: folder, resource_type: 'auto' },
           (error, result) => {
             if (error) throw error
             removeTmp(file.tempFilePath)
