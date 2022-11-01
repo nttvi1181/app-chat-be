@@ -51,7 +51,29 @@ module.exports = {
       if (!conditions) {
         conditions = {}
       }
-      const records = await ConversationService.getAll(conditions, skip, limit)
+      console.log(conditions)
+      const records = await ConversationService.getAll(
+        { members: ['635557588c3c605b36bc1404', '6355746c6ff1aa0aa8091851'] },
+        skip,
+        limit
+      )
+      res.json({ status: 'success', data: records })
+    } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+  getMyConversations: async (req, res) => {
+    try {
+      let skip = 0
+      let limit = 9999
+      if (req.query.limit) {
+        limit = req.query.limit
+      }
+      if (req.query.skip) {
+        skip = req.query.skip
+      }
+      const { userId } = req
+      const records = await ConversationService.getAll({ members: userId }, skip, limit)
       res.json({ status: 'success', data: records })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
@@ -60,10 +82,10 @@ module.exports = {
   getById: async (req, res) => {
     try {
       const { id } = req.params
-      if ( !id) {
+      if (!id) {
         throw new Error()
       }
-      const record = await ConversationService.getById( id)
+      const record = await ConversationService.getById(id)
       res.json({ status: 'success', data: record })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })

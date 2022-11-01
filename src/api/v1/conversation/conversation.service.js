@@ -58,7 +58,16 @@ module.exports = {
 
     getAll: async (conditions, skip = 0, limit = 9999999) => {
       try {
-        const records = await Conversation.find(conditions).skip(skip).limit(limit)
+        const records = await Conversation.find(conditions)
+          .populate('members', 'username avatar_url _id')
+          .populate({
+            path: 'last_message',
+            select: 'content type',
+            populate: { path: 'sender_id', select: 'username _id' },
+          })
+          .skip(skip)
+          .limit(limit)
+          .sort({ updatedAt: -1 })
         return records
       } catch (error) {
         throw new Error(error)

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const schema = mongoose.Schema
 const connect = require('../../../config/database.config')
+const { MessageModel } = require('../message/message.model')
+const { User } = require('../user/user.model')
 
 const ConversationSchema = new schema(
   {
@@ -15,10 +17,12 @@ const ConversationSchema = new schema(
     members: {
       type: 'array',
       default: [],
+      ref: User.modelName
     },
     last_message: {
       type: 'string',
       default: null,
+      ref: MessageModel.modelName
     },
     avatar_url: {
       type: 'string',
