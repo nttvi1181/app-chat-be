@@ -1,10 +1,19 @@
+const { ConversationService } = require('../conversation/conversation.service')
 const { MessageModel } = require('./message.model')
+const { validateMessage } = require('./message.validation')
 
 module.exports = {
   MessageService: {
     create: async (data) => {
       try {
-        console.log('data insert message', data)
+        const { error } = validateMessage(data)
+        if (error) throw new Error(error)
+        const isExistConversation = ConversationService.checkIsExistByConversationId(
+          data.conversation_id
+        )
+        if (!isExistConversation) {
+          throw createError.BadRequest()
+        }
         const newRecord = new MessageModel(data)
         const result = await newRecord.save()
         return result
@@ -57,6 +66,19 @@ module.exports = {
     getById: async (id) => {
       try {
         const record = await MessageModel.findOne({ _id: id }).lean().exec()
+        return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+
+    getByConversationId: async (id, skip = 0, limit = 20) => {
+      try {
+        const record = await MessageModel.find({ conversation_id: id })
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .populate('sender_id', 'username _id avatar_url')
         return record
       } catch (error) {
         throw new Error(error)

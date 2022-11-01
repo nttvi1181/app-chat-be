@@ -82,5 +82,17 @@ module.exports = {
         throw new Error(error)
       }
     },
+
+    checkIsExistByConversationId: async (conversation_id) => {
+      try {
+        const record = await Conversation.findOne({ conversation_id: conversation_id })
+          .lean()
+          .exec()
+        if (record) return true
+        return false
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
   },
 }

@@ -12,6 +12,7 @@ const { MessageService } = require('../../message/message.service')
 const { validateMessage } = require('../../message/message.validation')
 
 async function sendToMultiple(message, array, data) {
+  console.log("data",data)
   return Promise.all(array?.map((item) => _io.to(item).emit(message, data)))
 }
 class SocketServices {
@@ -56,7 +57,10 @@ class SocketServices {
           }),
         ])
           .then(() => {
-            sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), msg)
+            sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), {
+              ...msg,
+              is_sent: true,
+            })
               .then(() => {
                 console.log('LOG => SEND NEW MESSAGE SUCCESS', JSON.stringify(msg))
               })

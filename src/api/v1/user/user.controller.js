@@ -103,7 +103,6 @@ module.exports = {
   myInfor: async function (req, res) {
     try {
       const { userId } = req
-      console.log(req)
       if (!userId) {
         throw createError.Unauthorized()
       }

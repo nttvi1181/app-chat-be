@@ -1,13 +1,21 @@
 const { MessageModel } = require('./message.model')
 const createError = require('http-errors')
-const { isExistConversation } = require('../conversation/conversation.handler')
+const { MessageService } = require('./message.service')
 
 module.exports = {
   MessageController: {
-    getByConversationRoomId: async () => {
+    getByConversationId: async (req, res) => {
       try {
-        const { conversation_id } = req.body
-        const messages = await MessageModel.find({ conversation_id })
+        const { conversation_id } = req.params
+        let skip = 0
+        let limit = 20
+        if (req.query.limit) {
+          limit = req.query.limit
+        }
+        if (req.query.skip) {
+          skip = req.query.skip
+        }
+        const messages = await MessageService.getByConversationId(conversation_id, skip, limit)
         res.json({
           message: 'success',
           data: messages,
@@ -29,22 +37,7 @@ module.exports = {
           data: message,
         })
       } catch (error) {
-        res
-          .status(error.status)
-          .json({ status: error.status, message: error.message })
-      }
-    },
-    create: async (data) => {
-      try {
-        const isExistConversation = isExistConversation(data.conversation_id)
-        if (!isExistConversation) {
-          throw createError.BadRequest()
-        }
-        const newMessage = new MessageModel(data)
-        const message = await newMessage.save()
-        return message
-      } catch (error) {
-        return null
+        res.status(error.status).json({ status: error.status, message: error.message })
       }
     },
     delete: async (data) => {
@@ -56,9 +49,7 @@ module.exports = {
         const res = await MessageModel.deleteOne({ _id: id })
         res.json({ status: 'success', message: 'Message deleted successfully' })
       } catch (error) {
-        res
-          .status(error.status)
-          .json({ status: error.status, message: error.message })
+        res.status(error.status).json({ status: error.status, message: error.message })
       }
     },
     update: async function (req, res) {
@@ -67,20 +58,14 @@ module.exports = {
         const data = { ...req.body }
         delete data.id
         delete data.message_id
-        const isExist = await MessageModel.findOneAndUpdate(
-          { _id: id },
-          { ...data },
-          { new: true }
-        )
+        const isExist = await MessageModel.findOneAndUpdate({ _id: id }, { ...data }, { new: true })
         if (!isExist) throw createError.BadRequest('update fail')
         res.json({
           status: 'success',
           data: isExist,
         })
       } catch (error) {
-        res
-          .status(error.status || 400)
-          .json({ status: error.status, message: error.message })
+        res.status(error.status || 400).json({ status: error.status, message: error.message })
       }
     },
   },

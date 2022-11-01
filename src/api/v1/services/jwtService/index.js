@@ -26,7 +26,7 @@ module.exports = {
   verifyAccessToken: async function (req, res, next) {
     try {
       let token = req.header('Authorization')
-      token = token.split(' ')[1]
+      token = token?.split(' ')[1]
       if (!token) throw createError.Forbidden('No token provided')
       jwt.verify(token, process.env.TOKEN_APP, (err, reply) => {
         if (err) throw createError.Unauthorized()

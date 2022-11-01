@@ -1,5 +1,4 @@
 const createError = require('http-errors')
-const { UserService } = require('./user.service')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
 const { ConversationService } = require('./conversation.service')
 module.exports = {
