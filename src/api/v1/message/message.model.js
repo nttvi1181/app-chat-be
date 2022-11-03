@@ -38,7 +38,7 @@ const messageSchema = new schema(
     },
     member_seens: {
       type: 'array',
-      default: [],
+      ref: User.modelName,
     },
     reactions: {
       type: 'array',

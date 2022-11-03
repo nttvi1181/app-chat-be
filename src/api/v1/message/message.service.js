@@ -16,6 +16,7 @@ module.exports = {
         }
         const newRecord = new MessageModel(data)
         const result = await newRecord.save()
+        await result.populate('sender_id', 'username _id avatar_url')
         return result
       } catch (error) {
         console.log('Error insert message')
@@ -71,7 +72,6 @@ module.exports = {
         throw new Error(error)
       }
     },
-
     getByConversationId: async (id, skip = 0, limit = 20) => {
       try {
         const record = await MessageModel.find({ conversation_id: id })
@@ -79,6 +79,28 @@ module.exports = {
           .limit(limit)
           .sort({ createdAt: -1 })
           .populate('sender_id', 'username _id avatar_url')
+        return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    checkIsSeenMessage: async (message_id, user_id) => {
+      try {
+        const record = await MessageModel.findOne({ message_id, member_seens: user_id })
+        return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    UpdateSeenMessage: async (message_id, user_id) => {
+      try {
+        const record = await MessageModel.findOneAndUpdate(
+          {
+            message_id,
+          },
+          { $push: { member_seens: user_id } },
+          { new: true }
+        )
         return record
       } catch (error) {
         throw new Error(error)

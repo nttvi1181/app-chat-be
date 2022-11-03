@@ -12,7 +12,6 @@ const { MessageService } = require('../../message/message.service')
 const { validateMessage } = require('../../message/message.validation')
 
 async function sendToMultiple(message, array, data) {
-  console.log('data', data)
   return Promise.all(array?.map((item) => _io.to(item).emit(message, data)))
 }
 class SocketServices {
@@ -56,10 +55,7 @@ class SocketServices {
               last_message: res._id,
             })
               .then(() => {
-                sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), {
-                  ...msg,
-                  _id: res._id,
-                })
+                sendToMultiple(SERVER_SEND_NEW_MESSAGE, _.uniq([...recive_id, sender_id]), res)
                   .then(() => {
                     console.log('LOG => SEND NEW MESSAGE SUCCESS', JSON.stringify(msg))
                   })
@@ -81,6 +77,16 @@ class SocketServices {
         console.log('error', error)
         socket.emit(CLIENT_SEND_MESSAGE_ERROR, msg)
       }
+    })
+
+    socket.on('CLIENT_SEND_SEEN_MESSAGE', async (msg) => {
+      const { message_id, user_id, conversation_members } = msg
+      const record = await MessageService.checkIsSeenMessage(message_id, user_id)
+      if (record) {
+        return
+      }
+      const newRecord = await MessageService.UpdateSeenMessage(message_id, user_id)
+      sendToMultiple('SERVER_SEND_SEEN_MESSAGE', _.uniq([...conversation_members]), newRecord)
     })
 
     socket.on(LEAVE_APP, (msg) => {

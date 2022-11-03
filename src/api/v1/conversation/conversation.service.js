@@ -62,8 +62,8 @@ module.exports = {
           .populate('members', 'username avatar_url _id')
           .populate({
             path: 'last_message',
-            select: 'content type',
-            populate: { path: 'sender_id', select: 'username _id' },
+            select: 'content type member_seens',
+            populate: { path: 'sender_id', select: 'username _id avatar_url' },
           })
           .skip(skip)
           .limit(limit)
