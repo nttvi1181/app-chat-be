@@ -51,7 +51,6 @@ module.exports = {
       if (!conditions) {
         conditions = {}
       }
-      console.log(conditions)
       const records = await ConversationService.getAll(
         { members: ['635557588c3c605b36bc1404', '6355746c6ff1aa0aa8091851'] },
         skip,
@@ -74,7 +73,18 @@ module.exports = {
       }
       const { userId } = req
       const records = await ConversationService.getAll({ members: userId }, skip, limit)
-      res.json({ status: 'success', data: records })
+      const originRecords = records.filter((record) => {
+        const itemDeleted = record?.members_deleted?.find((item) => item?.userId === userId)
+        if (!itemDeleted) {
+          return record
+        } else {
+          return (
+            itemDeleted?.time <
+            (record?.last_message?.send_time ?? new Date(record?.last_message?.createdAt).getTime())
+          )
+        }
+      })
+      res.json({ status: 'success', data: originRecords })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
     }
@@ -97,9 +107,23 @@ module.exports = {
       if (!conversation_id) {
         throw new Error()
       }
-      const record = await ConversationService.getByConversationIdq(conversation_id)
+      const record = await ConversationService.getByConversationId(conversation_id)
       res.json({ status: 'success', data: record })
     } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+  memberDeleteConversation: async (req, res) => {
+    try {
+      const { conversation_id } = req.body
+      const { userId } = req
+      if (!conversation_id || !userId) {
+        throw new Error()
+      }
+      const record = await ConversationService.memberDeletedConversation(conversation_id, userId)
+      res.json({ status: 'success', data: record })
+    } catch (error) {
+      console.log(error)
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
     }
   },

@@ -89,6 +89,21 @@ class SocketServices {
       sendToMultiple('SERVER_SEND_SEEN_MESSAGE', _.uniq([...conversation_members]), newRecord)
     })
 
+    socket.on('CLIENT_SEND_REACTION_MESSAGE', (data) => {
+      const { message_id, user_id, type, conversation_members } = data
+      MessageService.updateReactionMessage(message_id, user_id, type)
+        .then((response) => {
+          sendToMultiple(
+            'SERVER_SEND_REACTION_MESSAGE',
+            _.uniq([...conversation_members]),
+            response
+          )
+        })
+        .catch((err) => {
+          console.log('err', err)
+        })
+    })
+
     socket.on(LEAVE_APP, (msg) => {
       console.log(`User leave app`, msg)
     })

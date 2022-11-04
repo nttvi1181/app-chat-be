@@ -44,6 +44,9 @@ const messageSchema = new schema(
       type: 'array',
       default: [],
     },
+    send_time: {
+      type: "number",
+    }
   },
   { timestamps: true }
 )

@@ -17,15 +17,19 @@ const ConversationSchema = new schema(
     members: {
       type: 'array',
       default: [],
-      ref: User.modelName
+      ref: User.modelName,
     },
     last_message: {
       type: 'string',
       default: null,
-      ref: MessageModel.modelName
+      ref: MessageModel.modelName,
     },
     avatar_url: {
       type: 'string',
+    },
+    members_deleted: {
+      type: 'array',
+      default: [],
     },
   },
   { timestamps: true }

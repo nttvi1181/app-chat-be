@@ -1,12 +1,14 @@
 const { MessageModel } = require('./message.model')
 const createError = require('http-errors')
 const { MessageService } = require('./message.service')
+const { ConversationService } = require('../conversation/conversation.service')
 
 module.exports = {
   MessageController: {
     getByConversationId: async (req, res) => {
       try {
         const { conversation_id } = req.params
+        const { userId } = req
         let skip = 0
         let limit = 20
         if (req.query.limit) {
@@ -15,7 +17,16 @@ module.exports = {
         if (req.query.skip) {
           skip = req.query.skip
         }
-        const messages = await MessageService.getByConversationId(conversation_id, skip, limit)
+        const timeStartQuery = await ConversationService.getTimestampStartQueryMessage(
+          conversation_id,
+          userId
+        )
+        const messages = await MessageService.getByConversationId(
+          conversation_id,
+          timeStartQuery,
+          skip,
+          limit
+        )
         res.json({
           message: 'success',
           data: messages,

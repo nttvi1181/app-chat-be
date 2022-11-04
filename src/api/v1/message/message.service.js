@@ -72,9 +72,12 @@ module.exports = {
         throw new Error(error)
       }
     },
-    getByConversationId: async (id, skip = 0, limit = 20) => {
+    getByConversationId: async (id, timeStart, skip = 0, limit = 20) => {
       try {
-        const record = await MessageModel.find({ conversation_id: id })
+        const record = await MessageModel.find({
+          conversation_id: id,
+          send_time: { $gt: timeStart },
+        })
           .skip(skip)
           .limit(limit)
           .sort({ createdAt: -1 })
@@ -102,6 +105,71 @@ module.exports = {
           { new: true }
         )
         return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    checkIsReactionMessage: async (message_id, user_id) => {
+      try {
+        const record = await MessageModel.findOne({
+          message_id: message_id,
+          'reactions.userId': user_id,
+        })
+        return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    updateReactionMessage: async (message_id, user_id, type) => {
+      try {
+        const record = await MessageModel.findOne({
+          message_id: message_id,
+          'reactions.userId': user_id,
+        })
+        if (!record) {
+          await MessageModel.updateOne(
+            { message_id: message_id },
+            {
+              $push: {
+                reactions: {
+                  userId: user_id,
+                  type,
+                },
+              },
+            },
+            { new: true }
+          )
+          return [
+            {
+              userId: user_id,
+              type,
+            },
+          ]
+        }
+        const reaction = record.reactions.find((item) => item.userId === user_id)
+        if (reaction.type === type) {
+          newReactions = record.reactions.filter((item) => item.userId !== user_id)
+        } else {
+          newReactions = record.reactions.map((item) => {
+            if (item.userId === user_id) {
+              return {
+                ...item,
+                type,
+              }
+            }
+            return item
+          })
+        }
+        await MessageModel.updateOne(
+          { message_id: message_id, 'reactions.userId': user_id },
+          {
+            $set: {
+              reactions: newReactions,
+            },
+          },
+          { new: true }
+        )
+        return newReactions
       } catch (error) {
         throw new Error(error)
       }
