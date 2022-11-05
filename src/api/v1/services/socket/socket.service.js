@@ -89,19 +89,49 @@ class SocketServices {
       sendToMultiple('SERVER_SEND_SEEN_MESSAGE', _.uniq([...conversation_members]), newRecord)
     })
 
-    socket.on('CLIENT_SEND_REACTION_MESSAGE', (data) => {
-      const { message_id, user_id, type, conversation_members } = data
-      MessageService.updateReactionMessage(message_id, user_id, type)
-        .then((response) => {
-          sendToMultiple(
-            'SERVER_SEND_REACTION_MESSAGE',
-            _.uniq([...conversation_members]),
-            response
-          )
+    socket.on('CLIENT_SEND_REACTION_MESSAGE', async (data) => {
+      const { message_id, user_id, type, conversation_members, conversation_id } = data
+
+      const record = await MessageService.checkIsReactionMessage(
+        message_id,
+        conversation_id,
+        user_id
+      )
+      if (!record) {
+        const response = await MessageService.createReactionMessage(message_id, user_id, type)
+        sendToMultiple('SERVER_SEND_REACTION_MESSAGE', _.uniq([...conversation_members]), {
+          reactions: response.reactions,
+          conversation_id,
+          message_id,
         })
-        .catch((err) => {
-          console.log('err', err)
+      } else {
+        let newReactions
+        const reaction = record.reactions.find((item) => item.userId === user_id)
+        if (reaction.type === type) {
+          // CHECK TYPE REACTION TRUNG NHAU
+          newReactions = record.reactions.filter((item) => item.userId !== user_id)
+        } else {
+          newReactions = record.reactions.map((item) => {
+            if (item.userId === user_id) {
+              return {
+                ...item,
+                type,
+              }
+            }
+            return item
+          })
+        }
+        const response = await MessageService.updateReactionMessage(
+          message_id,
+          user_id,
+          newReactions
+        )
+        sendToMultiple('SERVER_SEND_REACTION_MESSAGE', _.uniq([...conversation_members]), {
+          reactions: newReactions,
+          conversation_id,
+          message_id,
         })
+      }
     })
 
     socket.on(LEAVE_APP, (msg) => {
@@ -109,4 +139,7 @@ class SocketServices {
     })
   }
 }
-module.exports = new SocketServices()
+module.exports = {
+  sendToMultiple,
+  SocketServices: new SocketServices(),
+}

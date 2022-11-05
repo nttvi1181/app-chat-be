@@ -9,4 +9,6 @@ router.get(
   MessageController.getByConversationId
 )
 
+router.post('/delete/:id', verifyAccessToken, MessageController.delete)
+
 module.exports = router

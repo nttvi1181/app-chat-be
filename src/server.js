@@ -1,14 +1,14 @@
 const { app } = require('./app')
 const http = require('http')
 const server = http.createServer(app)
-const { Server } = require("socket.io")
-const io = new Server(server, { 
+const { Server } = require('socket.io')
+const io = new Server(server, {
   cors: {
     origin: '*',
-  }
-});
+  },
+})
 require('dotenv').config()
-const SocketServices = require('./api/v1/services/socket/socket.service')
+const { SocketServices } = require('./api/v1/services/socket/socket.service')
 // const connectDB = require('./config/database.config')
 const PORT = process.env.PORT || 8080
 

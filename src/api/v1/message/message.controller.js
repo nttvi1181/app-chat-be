@@ -2,6 +2,8 @@ const { MessageModel } = require('./message.model')
 const createError = require('http-errors')
 const { MessageService } = require('./message.service')
 const { ConversationService } = require('../conversation/conversation.service')
+const messageService = require('./message.service')
+const { sendToMultiple } = require('../services/socket/socket.service')
 
 module.exports = {
   MessageController: {
@@ -51,16 +53,33 @@ module.exports = {
         res.status(error.status).json({ status: error.status, message: error.message })
       }
     },
-    delete: async (data) => {
+    delete: async (req, res) => {
       try {
         const { id } = req.params
+        const { userId } = req
+        const { conversation_members } = req.body
         if (!id) {
           throw createError.InternalServerError()
         }
-        const res = await MessageModel.deleteOne({ _id: id })
+        const message = await MessageService.getById(id)
+        if (!message) {
+          throw createError[400]
+        }
+        if (message.sender_id !== userId) throw createError.Forbidden()
+        await MessageService.update(id, { is_deleted: true })
+        const firtMessage = await MessageService.findOne({ is_deleted: false })
+        await ConversationService.updateByConversationId(message.conversation_id, {
+          last_message: firtMessage._id,
+        })
+        sendToMultiple('SERVER_SEND_DELETE_MESSAGE', conversation_members, {
+          message_id: message.message_id,
+          conversation_id: message.conversation_id,
+        })
         res.json({ status: 'success', message: 'Message deleted successfully' })
       } catch (error) {
-        res.status(error.status).json({ status: error.status, message: error.message })
+        res
+          .status(error?.status || 500)
+          .json({ status: error.status || 500, message: error.message })
       }
     },
     update: async function (req, res) {
