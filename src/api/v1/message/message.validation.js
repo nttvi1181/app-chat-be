@@ -15,6 +15,7 @@ const validateMessage = (data) => {
     reactions: joi.array(),
     is_check_conversation: joi.boolean(),
     send_time: joi.number(),
+    message_reply: joi.object(),
   })
   return message.validate(data)
 }

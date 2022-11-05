@@ -13,19 +13,24 @@ module.exports = {
         const { userId } = req
         let skip = 0
         let limit = 20
+        let send_time = 0
         if (req.query.limit) {
           limit = req.query.limit
         }
         if (req.query.skip) {
           skip = req.query.skip
         }
+        if (req.query.send_time) {
+          send_time = req.query.send_time
+        }
         const timeStartQuery = await ConversationService.getTimestampStartQueryMessage(
           conversation_id,
           userId
         )
+        send_time = send_time > timeStartQuery ? send_time : timeStartQuery
         const messages = await MessageService.getByConversationId(
           conversation_id,
-          timeStartQuery,
+          send_time,
           skip,
           limit
         )

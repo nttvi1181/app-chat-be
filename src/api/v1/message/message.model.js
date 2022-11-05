@@ -25,8 +25,9 @@ const messageSchema = new schema(
     type: {
       type: 'string',
     },
-    message_parent_id: {
-      type: 'string',
+    message_reply: {
+      type: 'object',
+      default: null,
     },
     is_deleted: {
       type: 'boolean',
@@ -45,8 +46,8 @@ const messageSchema = new schema(
       default: [],
     },
     send_time: {
-      type: "number",
-    }
+      type: 'number',
+    },
   },
   { timestamps: true }
 )

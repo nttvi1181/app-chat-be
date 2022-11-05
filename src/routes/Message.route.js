@@ -8,6 +8,11 @@ router.get(
   verifyAccessToken,
   MessageController.getByConversationId
 )
+router.get(
+  `/from_send_time/:conversation_id`,
+  verifyAccessToken,
+  MessageController.getByConversationId
+)
 
 router.post('/delete/:id', verifyAccessToken, MessageController.delete)
 

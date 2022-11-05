@@ -72,12 +72,12 @@ module.exports = {
         throw new Error(error)
       }
     },
-    getByConversationId: async (id, timeStart, skip = 0, limit = 20) => {
+    getByConversationId: async (conversation_id, timeStart, skip = 0, limit = 20) => {
       try {
         const record = await MessageModel.find({
-          conversation_id: id,
+          conversation_id: conversation_id,
           is_deleted: false,
-          send_time: { $gt: timeStart },
+          send_time: { $gte: timeStart },
         })
           .skip(skip)
           .limit(limit)
