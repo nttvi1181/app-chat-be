@@ -1,5 +1,7 @@
 const createError = require('http-errors')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
+const { sendToMultiple } = require('../services/socket/socket.service')
+const { Conversation } = require('./conversation.model')
 const { ConversationService } = require('./conversation.service')
 module.exports = {
   update: async function (req, res) {
@@ -122,6 +124,53 @@ module.exports = {
       }
       const record = await ConversationService.memberDeletedConversation(conversation_id, userId)
       res.json({ status: 'success', data: record })
+    } catch (error) {
+      console.log(error)
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+  pinMessage: async (req, res) => {
+    try {
+      const { message, conversation_id } = req.body
+      const { userId } = req
+      if (!message || !userId || !conversation_id) {
+        throw new Error()
+      }
+      const dataPinned = {
+        ...message,
+        userPinned: userId,
+      }
+      const newConversation = await ConversationService.updateWithPushByConversationId(
+        conversation_id,
+        { message_pinned: dataPinned }
+      )
+      sendToMultiple('SERVER_SEND_PIN_MESSAGE', newConversation.members, newConversation)
+      res.json({ status: 'success', data: newConversation })
+    } catch (error) {
+      console.log(error)
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+  unPinMessage: async (req, res) => {
+    try {
+      const { message, conversation_id } = req.body
+      const { userId } = req
+      if (!message || !userId || !conversation_id) {
+        throw new Error()
+      }
+      const newConversation = await Conversation.findOneAndUpdate(
+        { conversation_id },
+        {
+          $pull: {
+            message_pinned: {
+              message_id: message.message_id,
+            },
+          },
+        },
+        { new: true }
+      )
+      sendToMultiple('SERVER_SEND_UNPIN_MESSAGE', newConversation.members, newConversation)
+      res.json({ status: 'success', data: newConversation })
     } catch (error) {
       console.log(error)
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })

@@ -13,6 +13,7 @@ router.get(
   verifyAccessToken,
   MessageController.getByConversationId
 )
+router.get(`/search/`, verifyAccessToken, MessageController.searchByContent)
 
 router.post('/delete/:id', verifyAccessToken, MessageController.delete)
 

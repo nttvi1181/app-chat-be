@@ -55,6 +55,21 @@ module.exports = {
       }
     },
 
+    findOneAndUpdate: async (conditions, data) => {
+      try {
+        const record = await MessageModel.findOneAndUpdate(
+          conditions,
+          { $set: { ...data } },
+          { new: true }
+        )
+          .sort({ createdAt: -1 })
+          .exec()
+        return record
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+
     getAll: async (conditions, skip = 0, limit = 9999999) => {
       try {
         const records = await MessageModel.find(conditions).skip(skip).limit(limit)
@@ -153,6 +168,22 @@ module.exports = {
           },
           { new: true }
         )
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    searchByContent: async (conversation_id, searchKey, timeStart) => {
+      try {
+        let searchOption = {
+          conversation_id: conversation_id,
+          content: { $regex: searchKey, $options: 'i' },
+          send_time: { $gte: timeStart },
+        }
+        return await MessageModel.find(searchOption)
+          .sort({ createdAt: -1 })
+          .populate('sender_id', 'username _id avatar_url')
+          .lean()
+          .exec()
       } catch (error) {
         throw new Error(error)
       }

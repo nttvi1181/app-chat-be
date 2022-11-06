@@ -24,6 +24,10 @@ const ConversationSchema = new schema(
       default: null,
       ref: MessageModel.modelName,
     },
+    message_pinned: {
+      type: 'array',
+      default: [],
+    },
     avatar_url: {
       type: 'string',
     },

@@ -38,6 +38,32 @@ module.exports = {
       }
     },
 
+    updateWithPushByConversationId: async (id, data) => {
+      try {
+        const newRecord = await Conversation.findOneAndUpdate(
+          { conversation_id: id },
+          { $push: { ...data } },
+          { new: true }
+        )
+        return newRecord
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+
+    updateWithPullByConversationId: async (id, data) => {
+      try {
+        const newRecord = await Conversation.findOneAndUpdate(
+          { conversation_id: id },
+          { $pull: data },
+          { new: true }
+        )
+        return newRecord
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+
     delete: async (id) => {
       try {
         await Conversation.deleteOne({ _id: id })

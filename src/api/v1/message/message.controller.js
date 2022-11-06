@@ -76,9 +76,18 @@ module.exports = {
         await ConversationService.updateByConversationId(message.conversation_id, {
           last_message: firtMessage._id,
         })
+        const messageChildren = await MessageService.findOneAndUpdate(
+          {
+            is_deleted: false,
+            'message_reply._id': id,
+          },
+          { message_reply: null }
+        )
+
         sendToMultiple('SERVER_SEND_DELETE_MESSAGE', conversation_members, {
           message_id: message.message_id,
           conversation_id: message.conversation_id,
+          messageChildren: messageChildren?.message_id,
         })
         res.json({ status: 'success', message: 'Message deleted successfully' })
       } catch (error) {
@@ -98,6 +107,34 @@ module.exports = {
         res.json({
           status: 'success',
           data: isExist,
+        })
+      } catch (error) {
+        res.status(error.status || 400).json({ status: error.status, message: error.message })
+      }
+    },
+    searchByContent: async function (req, res) {
+      try {
+        const searchKey = req?.query?.searchKey
+        const conversation_id = req?.query?.conversation_id
+        const { userId } = req
+        if (!searchKey || !conversation_id) {
+          return res.json({
+            status: 'success',
+            data: [],
+          })
+        }
+        const timeStartQuery = await ConversationService.getTimestampStartQueryMessage(
+          conversation_id,
+          userId
+        )
+        const records = await MessageService.searchByContent(
+          conversation_id,
+          searchKey,
+          timeStartQuery
+        )
+        res.json({
+          status: 'success',
+          data: records,
         })
       } catch (error) {
         res.status(error.status || 400).json({ status: error.status, message: error.message })
