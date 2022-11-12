@@ -24,7 +24,7 @@ module.exports = {
           file.tempFilePath,
           { folder: folder, resource_type: 'auto' },
           (error, result) => {
-            if (error) throw error
+            if (error) throw new Error(error) 
             removeTmp(file.tempFilePath)
             res.json({ data: result, message: 'upload file success' })
           }
