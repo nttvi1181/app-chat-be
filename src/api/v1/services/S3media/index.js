@@ -19,12 +19,13 @@ module.exports = {
       try {
         const file = req?.files?.fileUpload
         const folder = req.body.folder
+        const type = req?.body?.type
         if (!file | !folder) throw new Error()
         await cloudinary.v2.uploader.upload(
           file.tempFilePath,
-          { folder: folder, resource_type: 'auto' },
+          { folder: folder, resource_type: 'raw' },
           (error, result) => {
-            if (error) throw new Error(error) 
+            if (error) throw new Error(error)
             removeTmp(file.tempFilePath)
             res.json({ data: result, message: 'upload file success' })
           }

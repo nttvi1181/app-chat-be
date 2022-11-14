@@ -10,12 +10,14 @@ const {
   updateUser,
   getById,
   getAllUser,
+  searchUserByNameOrPhone,
 } = require('../api/v1/user/user.controller')
 const { verifyAccessToken, verifyRefreshAccessToken } = require('../api/v1/services/jwtService')
 
 router.post(`${REGISTER}`, register)
 router.post(`${LOGIN}`, login)
 router.post(`${RESFRESH_TOKEN}`, verifyRefreshAccessToken, refreshToken)
+router.post('/search', searchUserByNameOrPhone)
 router.get(`${MYINFO}`, verifyAccessToken, myInfor)
 router.delete('/:id', deleteUser)
 router.put('/:id', verifyAccessToken, updateUser)

@@ -171,4 +171,24 @@ module.exports = {
         .json({ status: INVALID_REFRESH_TOKEN, message: error.message })
     }
   },
+  searchUserByNameOrPhone: async function (req, res, next) {
+    try {
+      const { searchKey } = req.body
+      let searchOption = {
+        $or: [
+          { username: { $regex: searchKey, $options: 'i' } },
+          { phone: { $regex: searchKey, $options: 'i' } },
+        ],
+      }
+      const records = await UserService.getAll(searchOption)
+      res.json({
+        status: 'success',
+        data: records,
+      })
+    } catch (error) {
+      res
+        .status(error.status || 401)
+        .json({ status: INVALID_REFRESH_TOKEN, message: error.message })
+    }
+  },
 }

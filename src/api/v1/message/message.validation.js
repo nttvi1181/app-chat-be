@@ -7,7 +7,7 @@ const validateMessage = (data) => {
     sender_id: joi.string().required(),
     recive_id: joi.array().required(),
     content: joi.string().required(),
-    type: joi.string().valid('TEXT', 'IMAGE', 'VIDEO', 'AUDIO').required(),
+    type: joi.string().valid('TEXT', 'IMAGE', 'VIDEO', 'AUDIO', 'ATTACH').required(),
     message_parent_id: joi.string(),
     is_deleted: joi.boolean(),
     is_recalled: joi.boolean(),
