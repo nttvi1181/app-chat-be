@@ -4,11 +4,13 @@ const UserRoute = require('./User.Router')
 const S3Route = require('./s3Media.route')
 const ConversationRoute = require('./Conversation.route')
 const MessageRoute = require('./Message.route')
+const RelationRoute = require('./Conversation.route')
 const route = (app) => {
   app.use(`${API}${V1}${USER}`, UserRoute)
   app.use(`${API}${V1}/conversation`, ConversationRoute)
   app.use(`${API}${V1}/message`, MessageRoute)
   app.use(`${API}${V1}/s3media`, S3Route)
+  app.use(`${API}${V1}/friend`, RelationRoute)
 
   app.use('/', (req, res) => {
     res.sendFile(__dirname + '/index.html')
