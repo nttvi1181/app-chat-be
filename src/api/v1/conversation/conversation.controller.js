@@ -1,4 +1,5 @@
 const createError = require('http-errors')
+const { createConversationId } = require('../../../utils/helper.utils')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
 const { sendToMultiple } = require('../services/socket/socket.service')
 const { Conversation } = require('./conversation.model')
@@ -37,6 +38,42 @@ module.exports = {
     }
   },
 
+  addMember: async (req, res) => {
+    try {
+      const { userIds, conversation_id } = req.body
+      const conversationCurrent = await ConversationService.getByConversationId(conversation_id)
+      const newMembers = _.uniq([...conversationCurrent.members, userIds])
+      const newConversationId = createConversationId(newMembers)
+      const newRecord = await ConversationService.updateByConversationId(conversation_id, {
+        conversation_id: newConversationId,
+        members: newMembers,
+      })
+      sendToMultiple('SERVER_SEND_ADD_MEMBER_TO_CONVERSATION', newMembers, newRecord)
+      res.json({ status: 'success', data: newRecord })
+    } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+  removeMember: async (req, res) => {
+    try {
+      const { userId, conversation_id } = req.body
+      const conversationCurrent = await ConversationService.getByConversationId(conversation_id)
+      const newMembers = conversationCurrent.members.filter((id) => id !== userId)
+      const newConversationId = createConversationId(newMembers)
+      const newRecord = await ConversationService.updateByConversationId(conversation_id, {
+        conversation_id: newConversationId,
+        members: newMembers,
+      })
+      sendToMultiple(
+        'SERVER_SEND_REMOVE_MEMBER_TO_CONVERSATION',
+        conversationCurrent.members,
+        newRecord
+      )
+      res.json({ status: 'success', data: newRecord })
+    } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
   getAllConversations: async (req, res) => {
     try {
       let conditions = req.query

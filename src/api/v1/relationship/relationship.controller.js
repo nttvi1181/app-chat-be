@@ -6,7 +6,9 @@ module.exports = {
     getAllRequestRecived: async (req, res, next) => {
       try {
         const { userId } = req
-        const records = await RelationService.getAll({ recive_id: userId, status: 'pending' })
+        const records = await RelationService.getAll({
+          $and: [{ recive_id: userId }, { status: 'pending' }],
+        })
         res.json({
           status: 'success',
           data: records,
@@ -18,7 +20,9 @@ module.exports = {
     getAllRequestSended: async (req, res, next) => {
       try {
         const { userId } = req
-        const records = await RelationService.getAll({ sender_id: userId, status: 'pending' })
+        const records = await RelationService.getAll({
+          $and: [{ sender_id: userId }, { status: 'pending' }],
+        })
         res.json({
           status: 'success',
           data: records,
@@ -43,10 +47,23 @@ module.exports = {
     acceptRequest: async (req, res, next) => {
       try {
         const { userId } = req
-        const { recive_id } = req.body
-        const record = await RelationService.updateByDataRecord(recive_id, userId, {
+        const { sender_id } = req.body
+        const record = await RelationService.updateByDataRecord(sender_id, userId, {
           status: 'accepted',
         })
+        res.json({
+          status: 'success',
+          data: record,
+        })
+      } catch (error) {
+        res.status(error.status || 400).json({ status: error.status, message: error.message })
+      }
+    },
+    rejectRequest: async (req, res, next) => {
+      try {
+        const { userId } = req
+        const { sender_id } = req.body
+        const record = await RelationService.deleteByDataRecord(sender_id, userId)
         res.json({
           status: 'success',
           data: record,
@@ -59,10 +76,7 @@ module.exports = {
       try {
         const { userId } = req
         const records = await RelationService.getAll({
-          $and: [
-            { $or: [{ recive_id: userId }, { sender_id: userId }] },
-            { status: 'accepted' },
-          ],
+          $and: [{ $or: [{ recive_id: userId }, { sender_id: userId }] }, { status: 'accepted' }],
         })
         res.json({
           status: 'success',

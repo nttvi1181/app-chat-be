@@ -6,11 +6,15 @@ const {
   getByConversationId,
   pinMessage,
   unPinMessage,
+  addMember,
+  removeMember,
 } = require('../api/v1/conversation/conversation.controller')
 const { verifyAccessToken, verifyRefreshAccessToken } = require('../api/v1/services/jwtService')
 
 router.get(`/all_conversations`, verifyAccessToken, getMyConversations)
 router.post('/member_delete', verifyAccessToken, memberDeleteConversation)
+router.post('/add_member', verifyAccessToken, addMember)
+router.post('/remove_member', verifyAccessToken, removeMember)
 router.post('/pin_message', verifyAccessToken, pinMessage)
 router.post('/un_pin_message', verifyAccessToken, unPinMessage)
 router.get('/:conversation_id', verifyAccessToken, getByConversationId)
