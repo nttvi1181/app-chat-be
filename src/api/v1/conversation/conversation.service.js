@@ -111,7 +111,10 @@ module.exports = {
 
     getByConversationId: async (id) => {
       try {
-        const record = await Conversation.findOne({ conversation_id: id }).lean().exec()
+        const record = await Conversation.findOne({ conversation_id: id })
+          .populate('members', 'username avatar_url _id')
+          .lean()
+          .exec()
         return record
       } catch (error) {
         throw new Error(error)

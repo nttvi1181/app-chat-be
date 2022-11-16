@@ -7,6 +7,11 @@ const { sendToMultiple } = require('../services/socket/socket.service')
 
 module.exports = {
   MessageController: {
+    all: async (req, res, next) => {
+      const { conversation_id } = req.params
+      const records = await MessageService.getAll({ conversation_id })
+      res.json({ records })
+    },
     getByConversationId: async (req, res) => {
       try {
         const { conversation_id } = req.params

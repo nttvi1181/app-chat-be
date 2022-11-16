@@ -4,6 +4,7 @@ const { signAccessToken, signRefreshAccessToken } = require('../services/jwtServ
 const { sendToMultiple } = require('../services/socket/socket.service')
 const { Conversation } = require('./conversation.model')
 const { ConversationService } = require('./conversation.service')
+const _ = require('lodash')
 module.exports = {
   update: async function (req, res) {
     try {
@@ -41,9 +42,13 @@ module.exports = {
   addMember: async (req, res) => {
     try {
       const { userIds, conversation_id } = req.body
-      const conversationCurrent = await ConversationService.getByConversationId(conversation_id)
-      const newMembers = _.uniq([...conversationCurrent.members, userIds])
+      const conversationCurrent = await ConversationService.findOne({ conversation_id })
+      const newMembers = _.uniq([...conversationCurrent.members, ...userIds])
       const newConversationId = createConversationId(newMembers)
+      const isExist = await ConversationService.getByConversationId(newConversationId)
+      if (isExist) {
+        return res.status(200).json({ status: 'success', code: 3, data: isExist })
+      }
       const newRecord = await ConversationService.updateByConversationId(conversation_id, {
         conversation_id: newConversationId,
         members: newMembers,
@@ -57,7 +62,7 @@ module.exports = {
   removeMember: async (req, res) => {
     try {
       const { userId, conversation_id } = req.body
-      const conversationCurrent = await ConversationService.getByConversationId(conversation_id)
+      const conversationCurrent = await ConversationService.findOne({conversation_id})
       const newMembers = conversationCurrent.members.filter((id) => id !== userId)
       const newConversationId = createConversationId(newMembers)
       const newRecord = await ConversationService.updateByConversationId(conversation_id, {
@@ -127,6 +132,10 @@ module.exports = {
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
     }
+  },
+  all: async (req, res) => {
+    const records = await ConversationService.getAll()
+    res.json({ status: 'success', data: records })
   },
   getById: async (req, res) => {
     try {

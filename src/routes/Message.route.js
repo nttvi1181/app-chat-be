@@ -8,6 +8,7 @@ router.get(
   verifyAccessToken,
   MessageController.getByConversationId
 )
+router.get(`/test/:conversation_id`, MessageController.all)
 router.get(
   `/from_send_time/:conversation_id`,
   verifyAccessToken,
