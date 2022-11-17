@@ -1,5 +1,7 @@
 const createError = require('http-errors')
+const { UserService } = require('../user/user.service')
 const { RelationService } = require('./relationship.service')
+const _ = require('lodash')
 
 module.exports = {
   RelationShipController: {
@@ -82,6 +84,24 @@ module.exports = {
           status: 'success',
           data: records,
         })
+      } catch (error) {
+        res.status(error.status || 400).json({ status: error.status, message: error.message })
+      }
+    },
+    getAllSuggestAddFriend: async (req, res, next) => {
+      try {
+        const { userId } = req
+
+        const recordsIgnore = await RelationService.getAll({
+          $or: [{ sender_id: userId }, { recive_id: userId }],
+        })
+        const idsIgnore = _.uniq(
+          recordsIgnore
+            .map((item) => item.sender_id)
+            .concat(recordsIgnore.map((item) => item.recive_id))
+        )
+        const userRecords = await UserService.getAll({ _id: { $nin: idsIgnore } })
+        res.json({ status: 'success', data: userRecords })
       } catch (error) {
         res.status(error.status || 400).json({ status: error.status, message: error.message })
       }

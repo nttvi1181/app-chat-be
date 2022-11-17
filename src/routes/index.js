@@ -4,7 +4,7 @@ const UserRoute = require('./User.Router')
 const S3Route = require('./s3Media.route')
 const ConversationRoute = require('./Conversation.route')
 const MessageRoute = require('./Message.route')
-const RelationRoute = require('./Conversation.route')
+const RelationRoute = require('./relation.route')
 const route = (app) => {
   app.use(`${API}${V1}${USER}`, UserRoute)
   app.use(`${API}${V1}/conversation`, ConversationRoute)

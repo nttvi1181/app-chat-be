@@ -87,7 +87,10 @@ module.exports = {
 
     getAll: async (conditions, skip = 0, limit = 9999999) => {
       try {
-        const records = await Relationship.find(conditions).skip(skip).limit(limit)
+        const records = await Relationship.find(conditions)
+          .populate('sender_id recive_id', 'username _id avatar_url')
+          .skip(skip)
+          .limit(limit)
         return records
       } catch (error) {
         throw new Error(error)
