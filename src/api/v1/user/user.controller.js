@@ -5,6 +5,9 @@ const { userValidate, userValidateLogin, userValidateUpdate } = require('./user.
 const { UserService } = require('./user.service')
 const { INVALID_LOGIN, INVALID_REFRESH_TOKEN } = require('../../../constant/errorType.constant')
 const { signAccessToken, signRefreshAccessToken } = require('../services/jwtService')
+const { sendSms } = require('../services/twilioService')
+const { CodeVerifyService } = require('../codeVerify/codeVerify.service')
+const { randomOTP } = require('../../../utils/helper.utils')
 module.exports = {
   register: async function (req, res) {
     try {
@@ -148,6 +151,53 @@ module.exports = {
       }
       const user = await UserService.getById(userId || id)
       res.json({ status: 'success', data: user })
+    } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+
+  getCodeVerify: async (req, res, next) => {
+    try {
+      const { userId } = req
+      const user = await UserService.getById(userId)
+      const otp = randomOTP()
+      const recordCode = await CodeVerifyService.create(userId, otp)
+      const messageCode = `mã otp dùng để xác thực tài khoản của bạn là: ${otp}. Vui lòng không cung cấp mã này cho bất kỳ ai.`
+      // await sendSms('+84' + user.phone, messageCode)
+      res.json({ status: 'success', data: 1 })
+    } catch (error) {
+      res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
+    }
+  },
+
+  verifyCode: async (req, res) => {
+    try {
+      const { userId } = req
+      const { code } = req.body
+      const record = await CodeVerifyService.findOne({ userId })
+      if (!record) {
+        throw createError.BadRequest('otp không đúng hoặc đã hết hạn vui lòng thử lại')
+      }
+      if (record.code !== code) {
+        throw createError.BadRequest('otp không đúng hoặc đã hết hạn vui lòng thử lại')
+      }
+      await CodeVerifyService.deleteOne({ userId })
+      res.json({
+        status: 'success',
+        data: 1,
+      })
+    } catch (error) {
+      res.status(error.status).json({ status: error.status, message: error.message })
+    }
+  },
+
+  getAllCodeVerify: async (req, res, next) => {
+    try {
+      const { userId } = req
+      const user = await UserService.getById(userId)
+      const recordsCode = await CodeVerifyService.getAll()
+      // sendSms('+840345475176', 'alo')
+      res.json({ status: 'success', data: recordsCode })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
     }

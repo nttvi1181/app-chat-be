@@ -20,4 +20,5 @@ const createConversationId = function (arrIds) {
   return sum.toString()
 }
 
-module.exports = { createConversationId }
+const randomOTP = () => Math.floor(100000 + Math.random() * 900000)
+module.exports = { createConversationId, randomOTP }

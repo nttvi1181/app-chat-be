@@ -27,6 +27,8 @@ module.exports = {
           (error, result) => {
             if (error) throw new Error(error)
             removeTmp(file.tempFilePath)
+            res.setHeader('content-type', 'application/json; charset=utf-8')
+            result.name = file.name
             res.json({ data: result, message: 'upload file success' })
           }
         )
