@@ -49,10 +49,9 @@ module.exports = {
       const user = await UserService.findOne({ phone })
       if (!user) throw createError.Conflict('account not exist')
       const checkPass = await user.isCheckPass(password)
-      //@todo after register
-      // if (!checkPass) {
-      //   throw createError.Unauthorized()
-      // }
+      if (!checkPass) {
+        throw createError.Unauthorized()
+      }
       const accessToken = await signAccessToken(user._id)
       const refreshAccessToken = await signRefreshAccessToken(user._id)
       res.json({
@@ -163,7 +162,7 @@ module.exports = {
       const otp = randomOTP()
       const recordCode = await CodeVerifyService.create(userId, otp)
       const messageCode = `mã otp dùng để xác thực tài khoản của bạn là: ${otp}. Vui lòng không cung cấp mã này cho bất kỳ ai.`
-      // await sendSms('+84' + user.phone, messageCode)
+      await sendSms('+84' + user.phone, messageCode)
       res.json({ status: 'success', data: 1 })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
@@ -181,6 +180,7 @@ module.exports = {
       if (record.code !== code) {
         throw createError.BadRequest('otp không đúng hoặc đã hết hạn vui lòng thử lại')
       }
+      await UserService.update(userId, { is_verified: true })
       await CodeVerifyService.deleteOne({ userId })
       res.json({
         status: 'success',

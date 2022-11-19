@@ -15,12 +15,13 @@ const codeVerifySchema = new schema(
     },
     expireAt: {
       type: Date,
-      default: new Date(),
-      expires: 300000,
+      default: Date.now() + 4 * 60 * 1000,
+      index: { expires: '1m' },
     },
   },
   { timestamps: true }
 )
+codeVerifySchema.index({ expireAt: 1 }, { expireAfterSeconds: 30 })
 module.exports = {
   codeVerifyModel: connect.model('codeVerify', codeVerifySchema),
 }
