@@ -8,6 +8,7 @@ const { signAccessToken, signRefreshAccessToken } = require('../services/jwtServ
 const { sendSms } = require('../services/twilioService')
 const { CodeVerifyService } = require('../codeVerify/codeVerify.service')
 const { randomOTP } = require('../../../utils/helper.utils')
+const { sendMail } = require('../services/mail')
 module.exports = {
   register: async function (req, res) {
     try {
@@ -18,9 +19,9 @@ module.exports = {
         throw createError.BadRequest()
       }
       console.log('LOG === REGISTER ==>', JSON.stringify(req.body))
-      const isExist = await User.findOne({ phone }).exec()
+      const isExist = await User.findOne({ $or: [{ phone }, { email }] }).exec()
       if (isExist) {
-        throw createError.Conflict('phone is ready')
+        throw createError.Conflict('phone or email is ready')
       }
       const dataRegister = req.body
       delete dataRegister?.confirm_password
@@ -46,7 +47,7 @@ module.exports = {
       const { error } = userValidateLogin(req.body)
       if (error) throw createError.BadRequest()
 
-      const user = await UserService.findOne({ phone })
+      const user = await UserService.findOne({ $or: [{ phone }, { email: phone }] })
       if (!user) throw createError.Conflict('account not exist')
       const checkPass = await user.isCheckPass(password)
       if (!checkPass) {
@@ -162,9 +163,11 @@ module.exports = {
       const otp = randomOTP()
       const recordCode = await CodeVerifyService.create(userId, otp)
       const messageCode = `mã otp dùng để xác thực tài khoản của bạn là: ${otp}. Vui lòng không cung cấp mã này cho bất kỳ ai.`
-      await sendSms('+84' + user.phone, messageCode)
+      sendMail({ subject: 'verify account', content: messageCode, email: user.email })
+
       res.json({ status: 'success', data: 1 })
     } catch (error) {
+      console.log(error)
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })
     }
   },
@@ -196,7 +199,6 @@ module.exports = {
       const { userId } = req
       const user = await UserService.getById(userId)
       const recordsCode = await CodeVerifyService.getAll()
-      // sendSms('+840345475176', 'alo')
       res.json({ status: 'success', data: recordsCode })
     } catch (error) {
       res.status(error.status || 500).json({ status: error.status || 500, message: error.message })

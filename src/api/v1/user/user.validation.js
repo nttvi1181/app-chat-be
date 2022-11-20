@@ -44,11 +44,7 @@ const userValidateUpdate = (data) => {
 
 const userValidateLogin = (data) => {
   const userSchema = joi.object({
-    phone: joi
-      .string()
-      .length(10)
-      .pattern(/^[0-9]+$/)
-      .required(),
+    phone: joi.string(),
     password: joi.string().min(6).required(),
   })
   return userSchema.validate(data)

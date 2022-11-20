@@ -7,7 +7,6 @@ const fileUpload = require('express-fileupload')
 require('dotenv').config()
 const route = require('./routes')
 const bodyParser = require('body-parser')
-
 app.use(
   cors({
     origin: '*',

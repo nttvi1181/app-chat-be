@@ -1,21 +1,19 @@
 const nodemailer = require('nodemailer')
 require('dotenv').config()
-
+let mailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.MAILNAME,
+    pass: process.env.MAILPASS,
+  },
+})
 function sendMail(data) {
-  let mailTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.MAILNAME,
-      pass: process.env.MAILPASS,
-    },
-  })
-
   // Setting credentials
   let mailDetails = {
-    from: '<your-email>@gmail.com',
+    from: "app-chat",
     to: data.email,
-    subject: 'Test mail using Cron job',
-    text: 'Node.js cron job email' + ' testing for GeeksforGeeks',
+    subject: data.subject,
+    text: data.content,
   }
 
   mailTransporter.sendMail(mailDetails, function (err, data) {
@@ -25,4 +23,8 @@ function sendMail(data) {
       console.log('Email sent successfully')
     }
   })
+}
+
+module.exports = {
+  sendMail,
 }

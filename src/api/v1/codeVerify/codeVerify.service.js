@@ -5,7 +5,9 @@ module.exports = {
     create: async (userId, code) => {
       try {
         const isExistRecord = await codeVerifyModel.findOne({ userId })
-        if (isExistRecord) return isExistRecord
+        if (isExistRecord) {
+          await codeVerifyModel.deleteOne({ userId })
+        }
         const newRecord = new codeVerifyModel({ userId, code })
         const result = await newRecord.save()
         return result
